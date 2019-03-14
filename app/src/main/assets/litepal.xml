@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<litepal>
+    <dbname value = "BookStore"></dbname>
+    <version value = "4"></version>
+    <list>
+        <mapping class = "com.example.marko.litepaldemo.litepal.Book"></mapping>
+        <mapping class = "com.example.marko.litepaldemo.litepal.Category"></mapping>
+        <mapping class="com.example.marko.litepaldemo.litepal.Introduction"></mapping>
+        <mapping class="com.example.marko.litepaldemo.litepal.Comment"></mapping>
+    </list>
+</litepal>
