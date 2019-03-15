@@ -9,13 +9,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.example.marko.litepaldemo.greendao.DatabaseManager;
+import com.example.marko.litepaldemo.greendao.DayStep;
+import com.example.marko.litepaldemo.greendao.DayStepDao;
+import com.example.marko.litepaldemo.greendao.SportInfo;
+import com.example.marko.litepaldemo.greendao.SportInfoDao;
+import com.example.marko.litepaldemo.greendao.UserInfo;
+import com.example.marko.litepaldemo.greendao.UserInfoDao;
 import com.example.marko.litepaldemo.litepal.Book;
 import com.example.marko.litepaldemo.sqlite.MySQLiteHelper;
 
 import org.litepal.LitePal;
 import org.litepal.tablemanager.Connector;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -49,8 +59,25 @@ public class MainActivity extends AppCompatActivity {
     Button litepalDeleteDataBtn;
     @BindView(R.id.litepal_query_data_btn)
     Button litepalQueryDataBtn;
+    @BindView(R.id.greendao_create_database_btn)
+    Button greendaoCreateDatabaseBtn;
+    @BindView(R.id.greendao_upgrade_database_btn)
+    Button greendaoUpgradeDatabaseBtn;
+    @BindView(R.id.greendao_add_data_btn)
+    Button greendaoAddDataBtn;
+    @BindView(R.id.greendao_update_data_btn)
+    Button greendaoUpdateDataBtn;
+    @BindView(R.id.greendao_delete_data_btn)
+    Button greendaoDeleteDataBtn;
+    @BindView(R.id.greendao_query_data_btn)
+    Button greendaoQueryDataBtn;
 
     private SQLiteOpenHelper openHelper;
+
+    private DatabaseManager databaseManager = DatabaseManager.getInstance();
+    private UserInfoDao userInfoDao = databaseManager.getUserInfoDao();
+    private SportInfoDao sportInfoDao = databaseManager.getSportInfoDao();
+    private DayStepDao dayStepDao = databaseManager.getDayStepDao();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,8 +154,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick({R.id.litepal_create_database_btn, R.id.litepal_upgrade_database_btn,
-              R.id.litepal_add_data_btn, R.id.litepal_update_data_btn,
-              R.id.litepal_delete_data_btn, R.id.litepal_query_data_btn})
+            R.id.litepal_add_data_btn, R.id.litepal_update_data_btn,
+            R.id.litepal_delete_data_btn, R.id.litepal_query_data_btn})
     public void onLitePalViewClicked(View view) {
         switch (view.getId()) {
             case R.id.litepal_create_database_btn:
@@ -162,19 +189,77 @@ public class MainActivity extends AppCompatActivity {
                 book1.setPrice(16.68);
                 book1.setPress("Anchor");
                 //将所有书名为The Lost Symbol ，作者是Dan Brown的价格更新为16.68，出版社更新为Anchor
-                book1.updateAll("name = ? and author = ?","The Lost Symbol","Dan Brown");
+                book1.updateAll("name = ? and author = ?", "The Lost Symbol", "Dan Brown");
                 break;
             case R.id.litepal_delete_data_btn:
-                LitePal.deleteAll(Book.class,"pages > ?","500");
+                LitePal.deleteAll(Book.class, "pages > ?", "500");
                 break;
             case R.id.litepal_query_data_btn:
                 List<Book> books = LitePal.findAll(Book.class);
-                for (Book book2 : books){
+                for (Book book2 : books) {
                     Log.d("*****", "Book name is :" + book2.getName());
                     Log.d("*****", "Book author is :" + book2.getAuthor());
                     Log.d("*****", "Book pages is :" + book2.getPages());
                     Log.d("*****", "Book price is :" + book2.getPrice());
                     Log.d("*****", "Book press is :" + book2.getPress());
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @OnClick({R.id.greendao_create_database_btn, R.id.greendao_upgrade_database_btn, R.id.greendao_add_data_btn, R.id.greendao_update_data_btn, R.id.greendao_delete_data_btn, R.id.greendao_query_data_btn})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.greendao_create_database_btn:
+                Toast.makeText(this,"数据库创建成功",Toast.LENGTH_SHORT).show();
+                /**
+                 * 在Application中调用DatabaseManager.getInstance().init(this)
+                 * 当app安装后，会自动建立数据库，同时根据实体类建立所有的表
+                 */
+                break;
+            case R.id.greendao_upgrade_database_btn:
+
+                break;
+            case R.id.greendao_add_data_btn:
+                UserInfo userInfo1 = new UserInfo(null,"0","0","a");
+                UserInfo userInfo2 = new UserInfo(null,"1","1","b");
+                UserInfo userInfo3 = new UserInfo(null,"2","2","c");
+                UserInfo userInfo4 = new UserInfo(null,"3","3","d");
+                List<UserInfo> userInfoList = new ArrayList<>();
+                userInfoList.add(userInfo2);
+                userInfoList.add(userInfo3);
+                userInfoList.add(userInfo4);
+                userInfoDao.insertInTx(userInfoList);
+
+                String date = new Date().toString();
+                SportInfo sportInfo = new SportInfo(null,date,userInfo1.getUserId());
+                sportInfoDao.insert(sportInfo);
+                DayStep dayStep = new DayStep(1,date,10000,sportInfo.getSportId());
+                dayStepDao.insert(dayStep);
+                break;
+            case R.id.greendao_update_data_btn:
+                SportInfo sportInfo1 = new SportInfo(null,"2019.03.14", (long) 1);
+                sportInfoDao.insertOrReplace(sportInfo1);
+                sportInfoDao.update(new SportInfo((long) 2,"2019.03.13",null));
+                break;
+            case R.id.greendao_delete_data_btn:
+                sportInfoDao.delete(new SportInfo((long) 2,"2019.03.13",null));
+                break;
+            case R.id.greendao_query_data_btn:
+                //方法一
+//                List<SportInfo> mSportInfo = sportInfoDao.loadAll();
+                //方法二
+//                List<SportInfo> mSportInfo = sportInfoDao.queryBuilder().list();
+                //方法三：惰性加载
+//                List<SportInfo> mSportInfo = sportInfoDao.queryBuilder().listLazy();
+                //查找指定条件的数据
+                List<SportInfo> mSportInfo = sportInfoDao.
+                        queryBuilder().where(SportInfoDao.Properties.Date.eq("2019.03.14")).listLazy();
+                for (int i = 0; i < mSportInfo.size(); i++){
+                    Log.e("********","SportId:" +
+                            mSportInfo.get(i).getSportId());
                 }
                 break;
             default:

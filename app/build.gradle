@@ -1,4 +1,6 @@
 apply plugin: 'com.android.application'
+//GreenDao操作
+apply plugin: 'org.greenrobot.greendao'
 
 android {
     compileSdkVersion 27
@@ -28,4 +30,7 @@ dependencies {
     compile 'org.litepal.android:core:2.0.0'
     compile 'com.jakewharton:butterknife:8.8.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
+    //GreenDao操作
+    compile 'org.greenrobot:greendao:3.2.2'
 }
